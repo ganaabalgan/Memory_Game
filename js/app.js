@@ -7,6 +7,7 @@ var cards = ["fa-diamond","fa-paper-plane-o","fa-anchor","fa-bolt","fa-cube","fa
 var holder = [];
 var matchingPairs = 0;
 var moves = 0;
+var start_time = 0;
 /*
  * Display the cards on the page
  *   - shuffle the list of cards using the provided "shuffle" method below
@@ -14,11 +15,13 @@ var moves = 0;
  *   - add each card's HTML to the page
  */
 shuffle(cards);
-
+eventSelect();
+startCount();
 // Creates HTML for all cards
 // Resets board
 function resetBoard(cards) {
     shuffle(cards);
+    startCount();
     var previousDeck = document.querySelector(".deck");
     previousDeck.remove();
     var deck = document.createElement('ul');
@@ -27,14 +30,15 @@ function resetBoard(cards) {
         var item = document.createElement('li');
         item.classList.add("card");
         var instance = document.createElement('i');
-        item.classList.add("fa");
-        item.classList.add(card);
+        instance.classList.add("fa");
+        instance.classList.add(card);
         item.appendChild(instance);
         deck.appendChild(item);
     });
     var container = document.querySelector(".container");
     container.appendChild(deck);
     moves = 0
+    eventSelect();
 }
 
 // Shuffle function from http://stackoverflow.com/a/2450976
@@ -68,43 +72,54 @@ document.querySelector(".restart").addEventListener("click", function() {
     resetBoard(cards);
 });
 
-var deck = document.querySelector(".deck");
-deck.addEventListener("click", function(event) {
-    incrementMove();
-    currentCardClass = event.target.firstElementChild.classList[1];
-    currentCard = event.target;
-    if (holder.length !== 0 && currentCardClass === holder[0].firstElementChild.classList[1]) { // Matching
-        var allMatchingCards = document.querySelectorAll("." + currentCardClass);
-        allMatchingCards.forEach(function(card) {
-           card.parentElement.classList.add("match");
-        });
-        matchingPairs = matchingPairs + 1;
-        holder = [];
-        endGame(matchingPairs);
-    } else if (holder.length !== 0 && currentCardClass !== holder[0].firstElementChild.classList[1]){ // Not matching
-        event.target.classList.add("open");
-        event.target.classList.add("show");
-        setTimeout(function(){}, 5000);
-        event.target.classList.remove("open");
-        event.target.classList.remove("show");
-        holder[0].classList.remove("open");
-        holder[0].classList.remove("show");
-        holder = [];
-    } else { // Nothing opened
-        holder.push(currentCard);
-        event.target.classList.add("open");
-        event.target.classList.add("show");
-    }
-});
+function eventSelect(){
+    var deck = document.querySelector(".deck");
+    deck.classList.toggle("flip");
+    deck.addEventListener("click", function(event) {
+        incrementMove();
+        currentCardClass = event.target.firstElementChild.classList[1];
+        currentCard = event.target;
+        if (holder.length !== 0
+                && currentCardClass === holder[0].firstElementChild.classList[1]
+                && (event.target.offsetLeft !== holder[0].offsetLeft
+                || event.target.offsetTop !== holder[0].offsetTop)) { // Matching
+            var allMatchingCards = document.querySelectorAll("." + currentCardClass);
+            allMatchingCards.forEach(function(card) {
+            card.parentElement.classList.add("match");
+            });
+            matchingPairs = matchingPairs + 1;
+            holder = [];
+            endGame(matchingPairs);
+        } else if (holder.length !== 0 && currentCardClass !== holder[0].firstElementChild.classList[1]){ // Not matching
+            event.target.classList.add("open");
+            event.target.classList.add("show");
+            setTimeout(function(){
+                event.target.classList.remove("open");
+                event.target.classList.remove("show");
+                holder[0].classList.remove("open");
+                holder[0].classList.remove("show");
+                holder = [];
+            }, 1000);
+        } else { // Nothing opened
+            holder.push(currentCard);
+            event.target.classList.add("open");
+            event.target.classList.add("show");
+        }
+    });
+}
 
-function incrementMove () {
+function incrementMove() {
     moves = moves + 1;
     document.querySelector(".moves").innerHTML = moves;
 }
 
 function endGame(matchingPairs) {
     if (matchingPairs === 8){
-        alert("You have Won!");
+        var end_time = new Date();
+        alert("You have Won! It took you " + moves + " moves and " + (end_time-start_time)/1000 + " seconds.");
         resetBoard(cards);
     }
+}
+function startCount() {
+    start_time = new Date();
 }
