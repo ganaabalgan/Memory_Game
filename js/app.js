@@ -118,10 +118,12 @@ function eventSelect(){
 function incrementMove() {
     moves = moves + 1;
     document.querySelector(".moves").innerHTML = moves;
-    if (moves === 12) {
+    let end_time = new Date();
+    document.querySelector(".timer").innerHTML = (end_time-start_time)/1000;
+    if (moves === 15) {
         allStars[0].classList.add('hide');
         starCounter = starCounter - 1;
-    } else if (moves === 18) {
+    } else if (moves === 20) {
         allStars[1].classList.add('hide');
         starCounter = starCounter - 1;
     }
