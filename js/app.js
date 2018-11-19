@@ -1,13 +1,15 @@
 /*
  * Create a list that holds all of your cards
  */
-var cards = ["fa-diamond","fa-paper-plane-o","fa-anchor","fa-bolt","fa-cube","fa-anchor","fa-leaf"
+const cards = ["fa-diamond","fa-paper-plane-o","fa-anchor","fa-bolt","fa-cube","fa-anchor","fa-leaf"
                 ,"fa-bicycle","fa-diamond","fa-bomb","fa-leaf","fa-bomb","fa-bolt","fa-bicycle"
                 ,"fa-paper-plane-o","fa-cube"];
-var holder = [];
-var matchingPairs = 0;
-var moves = 0;
-var start_time = 0;
+let holder = [];
+let matchingPairs = 0;
+let moves = 0;
+let start_time = 0;
+let starCounter = 3;
+const allStars = document.querySelectorAll('.fa-star');
 /*
  * Display the cards on the page
  *   - shuffle the list of cards using the provided "shuffle" method below
@@ -22,28 +24,33 @@ startCount();
 function resetBoard(cards) {
     shuffle(cards);
     startCount();
-    var previousDeck = document.querySelector(".deck");
+    moves = 0
+    holder = [];
+    document.querySelector(".moves").innerHTML = moves;
+    let previousDeck = document.querySelector(".deck");
     previousDeck.remove();
-    var deck = document.createElement('ul');
+    let deck = document.createElement('ul');
     deck.classList.add("deck");
     cards.forEach(function(card) {
-        var item = document.createElement('li');
+        let item = document.createElement('li');
         item.classList.add("card");
-        var instance = document.createElement('i');
+        let instance = document.createElement('i');
         instance.classList.add("fa");
         instance.classList.add(card);
         item.appendChild(instance);
         deck.appendChild(item);
     });
-    var container = document.querySelector(".container");
+    let container = document.querySelector(".container");
     container.appendChild(deck);
-    moves = 0
     eventSelect();
+    for (let i = 0; i < 3; i++) {
+        allStars[i].classList.remove('hide');
+    }
 }
 
 // Shuffle function from http://stackoverflow.com/a/2450976
 function shuffle(array) {
-    var currentIndex = array.length, temporaryValue, randomIndex;
+    let currentIndex = array.length, temporaryValue, randomIndex;
 
     while (currentIndex !== 0) {
         randomIndex = Math.floor(Math.random() * currentIndex);
@@ -73,7 +80,7 @@ document.querySelector(".restart").addEventListener("click", function() {
 });
 
 function eventSelect(){
-    var deck = document.querySelector(".deck");
+    let deck = document.querySelector(".deck");
     deck.classList.toggle("flip");
     deck.addEventListener("click", function(event) {
         incrementMove();
@@ -83,7 +90,7 @@ function eventSelect(){
                 && currentCardClass === holder[0].firstElementChild.classList[1]
                 && (event.target.offsetLeft !== holder[0].offsetLeft
                 || event.target.offsetTop !== holder[0].offsetTop)) { // Matching
-            var allMatchingCards = document.querySelectorAll("." + currentCardClass);
+            let allMatchingCards = document.querySelectorAll("." + currentCardClass);
             allMatchingCards.forEach(function(card) {
             card.parentElement.classList.add("match");
             });
@@ -111,13 +118,22 @@ function eventSelect(){
 function incrementMove() {
     moves = moves + 1;
     document.querySelector(".moves").innerHTML = moves;
+    if (moves === 12) {
+        allStars[0].classList.add('hide');
+        starCounter = starCounter - 1;
+    } else if (moves === 18) {
+        allStars[1].classList.add('hide');
+        starCounter = starCounter - 1;
+    }
 }
 
 function endGame(matchingPairs) {
     if (matchingPairs === 8){
-        var end_time = new Date();
-        alert("You have Won! It took you " + moves + " moves and " + (end_time-start_time)/1000 + " seconds.");
+        let end_time = new Date();
+        alert("You have Won with " + starCounter + " stars! It took you " + moves + " moves and " + (end_time-start_time)/1000 + " seconds.");
         resetBoard(cards);
+        moves = 0;
+        starCounter = 3;
     }
 }
 function startCount() {
