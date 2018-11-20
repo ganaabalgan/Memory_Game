@@ -18,14 +18,20 @@ const allStars = document.querySelectorAll('.fa-star');
  */
 shuffle(cards);
 eventSelect();
-startCount();
+var timer = new Timer();
+timer.start();
+timer.addEventListener('secondsUpdated', function (e) {
+    document.querySelector("#timer").innerHTML = timer.getTimeValues().toString();
+});
 // Creates HTML for all cards
 // Resets board
 function resetBoard(cards) {
     shuffle(cards);
-    startCount();
+    timer.start();
     moves = 0
     holder = [];
+    matchingPairs = 0;
+    timer.reset();
     document.querySelector(".moves").innerHTML = moves;
     let previousDeck = document.querySelector(".deck");
     previousDeck.remove();
@@ -83,13 +89,13 @@ function eventSelect(){
     let deck = document.querySelector(".deck");
     deck.classList.toggle("flip");
     deck.addEventListener("click", function(event) {
-        incrementMove();
         currentCardClass = event.target.firstElementChild.classList[1];
         currentCard = event.target;
         if (holder.length !== 0
                 && currentCardClass === holder[0].firstElementChild.classList[1]
                 && (event.target.offsetLeft !== holder[0].offsetLeft
                 || event.target.offsetTop !== holder[0].offsetTop)) { // Matching
+            incrementMove();
             let allMatchingCards = document.querySelectorAll("." + currentCardClass);
             allMatchingCards.forEach(function(card) {
             card.parentElement.classList.add("match");
@@ -98,7 +104,7 @@ function eventSelect(){
             holder = [];
             endGame(matchingPairs);
         } else if (holder.length !== 0 && currentCardClass !== holder[0].firstElementChild.classList[1]){ // Not matching
-            event.target.classList.add("open");
+            incrementMove();event.target.classList.add("open");
             event.target.classList.add("show");
             setTimeout(function(){
                 event.target.classList.remove("open");
@@ -107,6 +113,7 @@ function eventSelect(){
                 holder[0].classList.remove("show");
                 holder = [];
             }, 1000);
+            incrementMove();
         } else { // Nothing opened
             holder.push(currentCard);
             event.target.classList.add("open");
@@ -118,8 +125,6 @@ function eventSelect(){
 function incrementMove() {
     moves = moves + 1;
     document.querySelector(".moves").innerHTML = moves;
-    let end_time = new Date();
-    document.querySelector(".timer").innerHTML = (end_time-start_time)/1000;
     if (moves === 15) {
         allStars[0].classList.add('hide');
         starCounter = starCounter - 1;
@@ -131,13 +136,15 @@ function incrementMove() {
 
 function endGame(matchingPairs) {
     if (matchingPairs === 8){
-        let end_time = new Date();
-        alert("You have Won with " + starCounter + " stars! It took you " + moves + " moves and " + (end_time-start_time)/1000 + " seconds.");
-        resetBoard(cards);
-        moves = 0;
         starCounter = 3;
+        let r = confirm("You have Won with " + starCounter + " stars! It took you "
+                + moves + " moves and " + document.querySelector("#timer").innerHTML
+                + " seconds.\nWould you like to play again?");
+        if (r == true) {
+            resetBoard(cards);
+        } else {
+            txt = "You pressed Cancel!";
+        }
+        moves = 0;
     }
-}
-function startCount() {
-    start_time = new Date();
 }
